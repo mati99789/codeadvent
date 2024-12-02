@@ -1,7 +1,7 @@
 import {readInputFile} from "../utils/readFile.js";
 
 export const day1 = async () => {
-    const data = await readInputFile('../../input.txt');
+    const data = await readInputFile('./src/day1/input.txt');
 
 
     const processData = data
