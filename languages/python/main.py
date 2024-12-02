@@ -21,8 +21,16 @@ for i in range(len(leftList)):
     count = 0
     total += abs(int(leftList[i]) - int(rightList[i]))
 
-    for x in range(len(leftList)):
-        print(x)
+secondAnswer = 0
+for i in range(len(leftList)):
+    count = 0
+
+    for j in range(len(leftList)):
+        if leftList[i] == rightList[j] and leftList[i] != 0:
+            count += 1
+
+    secondAnswer += int(leftList[i]) * count
+
 
 print(total)
-
+print(secondAnswer)
