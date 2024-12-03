@@ -34,9 +34,6 @@ const partTwo = async () => {
     let total = 0;
     let isEnabled = true;
 
-    for (let i = 0; i < 20; i++) {
-        console.log(result[i])
-    }
 
     result.forEach((match) => {
         const completeMatch = match[0];  // This is what we called fullMatch
@@ -51,4 +48,5 @@ const partTwo = async () => {
         }
     })
 
+    console.log(total)
 }
