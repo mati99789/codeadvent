@@ -1,144 +1,97 @@
 import {readInputFile} from "../utils/readFile.js";
 
-type Direction = [number, number];
-
-const directions: Direction[] = [
-    [-1, 0],  // up
-    [1, 0],   // down
-    [0, -1],  // left
-    [0, 1],   // right
-    [-1, -1], // up-left diagonal
-    [-1, 1],  // up-right diagonal
-    [1, -1],  // down-left diagonal
-    [1, 1]    // down-right diagonal
+const directions = [
+    [0, 1], // right
+    [0, -1], // left
+    [-1, 0], // up
+    [1, 0],  // down
+    [1, 1], //down right
+    [1, -1], // down left
+    [-1, -1], // up left
+    [-1, 1] // up right
 ]
 
-const gridCreation = (data: string) => {
+export async function day4() {
+    const input = await readInputFile("/src/day4/input.txt");
 
-    const lines = data.split('\n');
 
-    return lines.map(line => line.trim().split(''));
+    const grid = input.split("\n").map((line) => line.trim());
 
+    let count = 0;
+
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            if (grid[i][j] === "X") {
+                for (let dir of directions) {
+                    const [x, y] = dir;
+                    const xBounds = i + x * 3 >= 0 && i + x * 3 < grid.length && i + x * 2 >= 0 && i + x * 2 < grid.length && i + x >= 0 && i + x < grid.length;
+                    const yBounds = j + y * 3 >= 0 && j + y * 3 < grid[i].length && j + y * 2 >= 0 && j + y * 2 < grid[i].length && j + y >= 0 && j + y < grid[i].length;
+
+                    if (!xBounds || !yBounds) {
+                        continue
+                    }
+                    if (grid[i + x][j + y] === "M" && grid[i + x * 2][j + y * 2] === "A" && grid[i + x * 3][j + y * 3] === "S") {
+                        count++;
+                    }
+                }
+            }
+        }
+    }
+
+    console.log(count);
+
+    partTwo(grid)
 }
 
-export const day4 = async () => {
-    const data = await readInputFile('./src/day4/input.txt')
 
-    const grid = gridCreation(data)
+function partTwo(grid: string[]) {
+    let count = 0;
+    // Keep the diagonal directions structure
+    const diagonals = [
+        [[-1, -1], [1, 1]], // backslash diagonal \
+        [[-1, 1], [1, -1]]  // forward slash diagonal /
+    ];
 
-    let count = 0
-    for (let row = 0; row < grid.length; row++) {
-        for (let col = 0; col < grid[0].length; col++) {
-            for (const dir of directions) {
-                if (checkDirection(grid, row, col, dir)) {
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[i].length; j++) {
+            if (grid[i][j] === "A") {
+                let validX = true;
+
+                for (const [dir1, dir2] of diagonals) {
+                    const [x1, y1] = dir1;
+                    const [x2, y2] = dir2;
+
+                    // Check bounds for both ends of this diagonal
+                    if (!validPosition(i + x1, j + y1, grid) ||
+                        !validPosition(i + x2, j + y2, grid)) {
+                        validX = false;
+                        break;
+                    }
+
+                    // Check if we have M and S (or S and M) at the ends of the diagonal
+                    const diagonalPattern = (
+                        (grid[i + x1][j + y1] === "M" && grid[i + x2][j + y2] === "S") ||
+                        (grid[i + x1][j + y1] === "S" && grid[i + x2][j + y2] === "M")
+                    );
+
+                    if (!diagonalPattern) {
+                        validX = false;
+                        break;
+                    }
+                }
+
+                if (validX) {
                     count++;
                 }
             }
         }
     }
 
-    console.log(count)
-    console.log(partTwo())
+    console.log("Solution two:", count);
+    return count;
 }
 
-
-function checkDirection(grid: string[][], row: number, column: number, direction: Direction): boolean {
-    const [x, y] = direction;
-    const word = "XMAS";
-
-    // First check if word would fit within bounds
-    for (let i = 0; i < word.length; i++) {
-        const newRow = row + x * i;
-        const newCol = column + y * i;
-        if (newRow < 0 || newRow >= grid.length || newCol < 0 || newCol >= grid[0].length) {
-            return false;
-        }
-    }
-
-    // Now check if the letters match XMAS
-    for (let i = 0; i < word.length; i++) {
-        const newRow = row + x * i;
-        const newCol = column + y * i;
-        if (grid[newRow][newCol] !== word[i]) {
-            return false;
-        }
-    }
-
-    return true;
+function validPosition(i: number, j: number, grid: string[]): boolean {
+    return i >= 0 && i < grid.length && j >= 0 && j < grid[i].length;
 }
 
-function checkXMAS(grid: string[][], centerRow: number, centerCol: number): boolean {
-    // For each diagonal of the X, we need to check both "MAS" and "SAM"
-    const patterns = ["MAS", "SAM"];
-
-    // These represent the two diagonals of X
-    const diagonals: Direction[] = [
-        [-1, -1],
-        [-1, 1]
-    ];
-
-    // For each diagonal
-    for (const diagonal of diagonals) {
-        let foundValid = false;
-        const [dx, dy] = diagonal;
-
-        // Check both patterns (MAS and SAM)
-        for (const pattern of patterns) {
-            // Check if we can form the pattern starting from either end
-            // Start from top
-            let validFromTop = true;
-            for (let i = 0; i < pattern.length; i++) {
-                const newRow = centerRow + dx * (i - 1); // -1 to center the X
-                const newCol = centerCol + dy * (i - 1);
-
-                if (newRow < 0 || newRow >= grid.length ||
-                    newCol < 0 || newCol >= grid[0].length ||
-                    grid[newRow][newCol] !== pattern[i]) {
-                    validFromTop = false;
-                    break;
-                }
-            }
-
-            // Start from bottom
-            let validFromBottom = true;
-            for (let i = 0; i < pattern.length; i++) {
-                const newRow = centerRow + (-dx) * (i - 1); // Opposite direction
-                const newCol = centerCol + (-dy) * (i - 1);
-
-                if (newRow < 0 || newRow >= grid.length ||
-                    newCol < 0 || newCol >= grid[0].length ||
-                    grid[newRow][newCol] !== pattern[i]) {
-                    validFromBottom = false;
-                    break;
-                }
-            }
-
-            if (validFromTop || validFromBottom) {
-                foundValid = true;
-                break;
-            }
-        }
-
-        if (!foundValid) return false; // If we didn't find a valid pattern for this diagonal
-    }
-
-    return true;
-}
-
-async function partTwo() {
-    const data = await readInputFile('./src/day4/input.txt')
-
-    const grid = gridCreation(data)
-
-    let count = 0
-
-    for (let row = 1; row < grid.length - 1; row++) {
-        for (let col = 1; col < grid[0].length - 1; col++) {
-            if (grid[row][col] === 'A' && checkXMAS(grid, row, col)) {
-                count++;
-            }
-        }
-    }
-
-    console.log(count)
-}
