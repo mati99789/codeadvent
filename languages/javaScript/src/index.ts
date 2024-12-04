@@ -1,4 +1,4 @@
-import {day3} from "./day3/day3.js";
+import {day4} from "./day4/day4.js";
 
 
-day3()
+day4()
