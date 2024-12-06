@@ -7,14 +7,19 @@ export async function day5() {
 
     const [pages, update] = input.split("\n\n")
 
-    const filteredPages = pages.split("\n").map(line => line.split("|").map(Number))
-    const filteredUpdates = update.split('\n').map(line => line.trim().split(",")).map(item => item.map(Number))
+    const rules = pages.split("\n").map(line => line.split("|").map(Number))
+    const sequences = update.split('\n').map(line => line.trim().split(",")).map(item => item.map(Number))
 
 
 
-    const validSequences = filteredUpdates.filter((seq) => {
-        return filteredPages.every(([x, y]) => isValidSequence(x,y, seq))
+
+    const validSequences = sequences.filter((seq) => {
+        return rules.every(([x, y]) => isValidSequence(x,y, seq))
     })
+
+    const invalidSequences = sequences.filter((seq) => {
+        return !rules.every(([x, y]) => isValidSequence(x,y, seq))
+    }).map(item => item.sort((a, b) => b - a))
 
 
     const total = validSequences.reduce((acc, curr) => {
@@ -23,7 +28,15 @@ export async function day5() {
         return acc + middle
     }, 0)
 
-    console.log(total)
+    const totalInvalidSequences = invalidSequences.reduce((acc, curr) => {
+        const middle = curr[Math.floor(curr.length / 2)]
+        console.log(middle)
+        return acc + middle
+    }, 0)
+
+
+    console.log(invalidSequences)
+
 
 
 }
@@ -40,6 +53,7 @@ function isValidSequence(x: number, y: number, sequences: number[]): boolean {
                 return false;
             }
         }
+
     }
 
     return true
